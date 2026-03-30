@@ -106,6 +106,83 @@ test('filterObservable() observable objects', () => {
   expect(added.contents).toMatchObject([itemC]);
 });
 
+test('filterWritable() non-observable objects', () => {
+  let itemA = { valid: true };
+  let itemB = { valid: false };
+  let itemC = { valid: false };
+  let a = new ArrayColl([itemA, itemB, itemC]);
+  let filtered = a.filterWritable(item => item.valid);
+
+  expect(filtered.contents).toMatchObject([itemA]);
+  expect(a.contents).toMatchObject([itemA, itemB, itemC]);
+
+  let itemD = { valid: true };
+  filtered.add(itemD);
+  expect(filtered.contents).toMatchObject([itemA, itemD]);
+  expect(a.contents).toMatchObject([itemA, itemB, itemC, itemD]);
+
+  let itemE = { valid: false };
+  filtered.add(itemE);
+  expect(filtered.contents).toMatchObject([itemA, itemD]);
+
+  expect(a.contents).toMatchObject([itemA, itemB, itemC, itemD]);
+
+  filtered.remove(itemA);
+  expect(filtered.contents).toMatchObject([itemD]);
+  expect(a.contents).toMatchObject([itemB, itemC, itemD]);
+
+  itemB.valid = true;
+  expect(filtered.contents).toMatchObject([itemD]);
+  expect(a.contents).toMatchObject([itemB, itemC, itemD]);
+});
+
+test('filterWritable() observable objects', () => {
+  let itemA = new Leaf(true);
+  let itemB = new Leaf(false);
+  let itemC = new Leaf(false);
+  let a = new ArrayColl([itemA, itemB, itemC]);
+  let filtered = a.filterWritable(item => item.valid);
+
+  expect(filtered.contents).toMatchObject([itemA]);
+  expect(a.contents).toMatchObject([itemA, itemB, itemC]);
+
+  let added = new ArrayColl();
+  let removed = new ArrayColl();
+  filtered.registerObserver({
+    added: (items, coll) => {
+      added.addAll(items);
+    },
+    removed: (items, coll) => {
+      removed.addAll(items);
+    },
+  });
+
+  let itemD = new Leaf(true);
+  filtered.add(itemD);
+  expect(filtered.contents).toMatchObject([itemA, itemD]);
+  expect(a.contents).toMatchObject([itemA, itemB, itemC, itemD]);
+
+  let itemE = new Leaf(false);
+  filtered.add(itemE);
+  expect(filtered.contents).toMatchObject([itemA, itemD]);
+  expect(a.contents).toMatchObject([itemA, itemB, itemC, itemD]);
+
+  filtered.remove(itemA);
+  expect(filtered.contents).toMatchObject([itemD]);
+  expect(a.contents).toMatchObject([itemB, itemC, itemD]);
+
+  itemB.valid = true;
+  expect(filtered.length).toBe(2);
+  expect(a.length).toBe(3);
+
+  itemB.valid = false;
+  expect(filtered.length).toBe(1);
+  expect(a.length).toBe(2);
+
+  expect(added.length).toBe(2);
+  expect(removed.length).toBe(2);
+});
+
 test('filter() (deprecated API) non-observable objects', () => {
   let itemA = { valid: true };
   let itemB = { valid: false };
