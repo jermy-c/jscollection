@@ -24,6 +24,9 @@ test('sort', () => {
   expect(sorted.contents).toMatchObject(["a", "b", "b", "d", "e", "e2", "f", "g", "h", "i"]);
   expect(removed.contents).toMatchObject(["c"]);
   expect(added.contents).toMatchObject(["a", "e2", "i"]);
+
+  sorted.replaceAll(["h", "f", "d", "g", "b", "c", "b", "e"]);
+  expect(sorted.contents).toMatchObject(["b", "b", "c", "d", "e", "f", "g", "h"]);
 });
 
 
