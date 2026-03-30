@@ -1,4 +1,4 @@
-import type { FilteredCollection, ObservableFilteredCollection } from './operator/filter';
+import type { FilteredCollection, ObservableFilteredCollection, WritableFilteredCollection } from './operator/filter';
 import type { MapToCollection } from './operator/mapTo';
 import type { SortedCollection } from './operator/sort';
 import type { AdditionCollection } from './operator/add-merge';
@@ -175,6 +175,23 @@ declare class Collection<Item> {
    * @param filterFunc A function that accepts up to three arguments. The filter method calls the `filterFunc` function one time for each element in the collection.
    */
   filterObservable(filterFunc: (item: Item) => boolean): ObservableFilteredCollection<Item>;
+  /**
+   * Returns a subset of the source collection.
+   * Which items will be included is defined by `filterFunc`.
+   * This works like `Array.filter()`.
+   *
+   * It's writable, i.e. you can add and remove items from the filtered collection.
+   * The changes will be reflected in the source collection.
+   * 
+   * However, any items added before this filter was applied will not be removed
+   * from the source collection, even if they don't match the filter condition.
+   * Unless there was an update to the item, then it will be removed if it doesn't match anymore.
+   *
+   * @param source {Collection}   Another collection that is to be filtered
+   * @param filterFunc {Function(item)}
+   *     `item` will be included in FilteredCollection, (only) if `true` is returned
+   */
+  filterWritable(filterFunc: (item: Item) => boolean): WritableFilteredCollection<Item>;
   /**
    * Creates a new collection which contains only those items that meet a certain condition.
    * You define that condition by returning true from your `filterFunc`.
